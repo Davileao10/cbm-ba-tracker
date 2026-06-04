@@ -1,65 +1,328 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import Sidebar from "@/components/Sidebar";
 
 export default function Home() {
+
+  const [questoesResolvidas, setQuestoesResolvidas] = useState(0);
+  const [aproveitamento, setAproveitamento] = useState("0");
+
+  const [tarefasConcluidas, setTarefasConcluidas] = useState(0);
+
+  const [streak, setStreak] = useState(0);
+
+  const [revisoesPendentes, setRevisoesPendentes] =
+    useState(0);
+
+  const [mediaSimulados, setMediaSimulados] =
+    useState("0");
+
+  const totalTarefas = 20;
+
+  useEffect(() => {
+
+    // QUESTÕES
+
+    const questoesSalvas =
+      localStorage.getItem("questoes");
+
+    if (questoesSalvas) {
+
+      const historico =
+        JSON.parse(questoesSalvas);
+
+      const totalQuestoes =
+        historico.reduce(
+          (acc: number, item: any) =>
+            acc + item.questoes,
+          0
+        );
+
+      const totalAcertos =
+        historico.reduce(
+          (acc: number, item: any) =>
+            acc + item.acertos,
+          0
+        );
+
+      setQuestoesResolvidas(
+        totalQuestoes
+      );
+
+      const percentual =
+        totalQuestoes > 0
+          ? (
+              (totalAcertos /
+                totalQuestoes) *
+              100
+            ).toFixed(1)
+          : "0";
+
+      setAproveitamento(
+        percentual
+      );
+    }
+
+    // CRONOGRAMA
+
+    const cronograma =
+      localStorage.getItem(
+        "cronograma"
+      );
+
+    if (cronograma) {
+
+      const dados =
+        JSON.parse(
+          cronograma
+        );
+
+      const concluidas =
+        Object.values(
+          dados.tarefas || {}
+        )
+          .filter(Boolean)
+          .length;
+
+      setTarefasConcluidas(
+        concluidas
+      );
+
+    }
+
+    // STREAK
+
+    const estudos =
+      localStorage.getItem(
+        "estudos"
+      );
+
+    if (estudos) {
+
+      const registros =
+        JSON.parse(estudos);
+
+      const datasUnicas = [
+        ...new Set(
+          registros.map(
+            (e: any) => e.data
+          )
+        )
+      ];
+
+      setStreak(
+        datasUnicas.length
+      );
+    }
+
+    // REVISÕES
+
+    const revisoes =
+      localStorage.getItem(
+        "revisoesConcluidas"
+      );
+
+    if (revisoes) {
+
+      const lista =
+        JSON.parse(
+          revisoes
+        );
+
+      setRevisoesPendentes(
+        lista.length
+      );
+
+    }
+
+    // SIMULADOS
+
+    const simulados =
+      localStorage.getItem(
+        "simulados"
+      );
+
+    if (simulados) {
+
+      const historico =
+        JSON.parse(
+          simulados
+        );
+
+      if (
+        historico.length > 0
+      ) {
+
+        const media =
+          (
+            historico.reduce(
+              (
+                acc: number,
+                item: any
+              ) =>
+                acc +
+                (
+                  item.acertos /
+                  item.questoes
+                ) *
+                  100,
+              0
+            ) /
+            historico.length
+          ).toFixed(1);
+
+        setMediaSimulados(
+          media
+        );
+
+      }
+
+    }
+
+  }, []);
+
+  const progresso =
+    (tarefasConcluidas /
+      totalTarefas) *
+    100;
+
+  const indiceCBM =
+    Math.min(
+      100,
+
+      (
+        Number(
+          aproveitamento
+        ) *
+          0.4 +
+
+        progresso *
+          0.3 +
+
+        Number(
+          mediaSimulados
+        ) *
+          0.2 +
+
+        Math.min(
+          streak,
+          30
+        ) *
+          0.33
+      )
+    );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+    <div className="flex bg-zinc-950 text-white min-h-screen">
+
+      <Sidebar />
+
+      <main className="flex-1 p-8">
+
+        <h1 className="text-5xl font-bold mb-8">
+          🚒 Rumo ao CBM-BA
+        </h1>
+
+        <div className="grid grid-cols-4 gap-4">
+
+          <Card
+            titulo="Questões Resolvidas"
+            valor={questoesResolvidas}
+          />
+
+          <Card
+            titulo="Aproveitamento"
+            valor={`${aproveitamento}%`}
+          />
+
+          <Card
+            titulo="Tarefas Concluídas"
+            valor={tarefasConcluidas}
+          />
+
+          <Card
+            titulo="Progresso Semanal"
+            valor={`${progresso.toFixed(0)}%`}
+          />
+
+          <Card
+            titulo="🔥 Streak"
+            valor={`${streak} dias`}
+          />
+
+          <Card
+            titulo="📚 Revisões"
+            valor={revisoesPendentes}
+          />
+
+          <Card
+            titulo="🎯 Simulados"
+            valor={`${mediaSimulados}%`}
+          />
+
+          <Card
+            titulo="🏆 Índice CBM"
+            valor={indiceCBM.toFixed(0)}
+          />
+
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <div className="mt-10 bg-zinc-900 p-6 rounded-xl">
+
+          <h2 className="text-2xl font-bold mb-4">
+            Progresso Geral
+          </h2>
+
+          <div className="w-full bg-zinc-700 h-6 rounded-full">
+
+            <div
+              className="bg-green-500 h-6 rounded-full"
+              style={{
+                width: `${progresso}%`
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+          </div>
+
+          <p className="mt-3">
+            {tarefasConcluidas}
+            {" de "}
+            {totalTarefas}
+            {" tarefas concluídas"}
+          </p>
+
         </div>
+
       </main>
+
     </div>
+
+  );
+}
+
+function Card({
+  titulo,
+  valor
+}: {
+  titulo: string;
+  valor: string | number;
+}) {
+
+  return (
+
+    <div className="bg-zinc-900 rounded-xl p-6">
+
+      <h2 className="text-zinc-400">
+        {titulo}
+      </h2>
+
+      <p className="text-4xl font-bold">
+        {valor}
+      </p>
+
+    </div>
+
   );
 }
