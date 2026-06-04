@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+body {
+  background: #09090b;
+}
+
+.card-premium {
+  background: linear-gradient(
+    180deg,
+    #18181b 0%,
+    #111827 100%
+  );
+
+  border: 1px solid #27272a;
+
+  transition: all 0.3s ease;
+}
+
+.card-premium:hover {
+  transform: translateY(-3px);
+
+  border-color: #dc2626;
+}

@@ -4,31 +4,24 @@ import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 
 export default function Home() {
-
   const [questoesResolvidas, setQuestoesResolvidas] = useState(0);
   const [aproveitamento, setAproveitamento] = useState("0");
-
   const [tarefasConcluidas, setTarefasConcluidas] = useState(0);
-
-  const [streak, setStreak] = useState(0);
-
-  const [revisoesPendentes, setRevisoesPendentes] =
-    useState(0);
-
-  const [mediaSimulados, setMediaSimulados] =
-    useState("0");
-
-  const totalTarefas = 20;
+  const [missoesHoje, setMissoesHoje] = useState<string[]>([]);
+  const [jornadaCBM, setJornadaCBM] = useState(0);
 
   useEffect(() => {
-
-    // QUESTÕES
-
     const questoesSalvas =
       localStorage.getItem("questoes");
 
-    if (questoesSalvas) {
+    const cronogramaSalvo =
+      localStorage.getItem("cronograma");
 
+    let notaCronograma = 0;
+
+    // QUESTÕES
+
+    if (questoesSalvas) {
       const historico =
         JSON.parse(questoesSalvas);
 
@@ -59,24 +52,14 @@ export default function Home() {
             ).toFixed(1)
           : "0";
 
-      setAproveitamento(
-        percentual
-      );
+      setAproveitamento(percentual);
     }
 
     // CRONOGRAMA
 
-    const cronograma =
-      localStorage.getItem(
-        "cronograma"
-      );
-
-    if (cronograma) {
-
+    if (cronogramaSalvo) {
       const dados =
-        JSON.parse(
-          cronograma
-        );
+        JSON.parse(cronogramaSalvo);
 
       const concluidas =
         Object.values(
@@ -89,240 +72,355 @@ export default function Home() {
         concluidas
       );
 
+      notaCronograma =
+        (concluidas / 20) * 100;
     }
 
-    // STREAK
+    // JORNADA CBM - 36 SEMANAS
 
-    const estudos =
-      localStorage.getItem(
-        "estudos"
+    const TOTAL_SEMANAS = 36;
+
+    const historicoCronograma =
+      JSON.parse(
+        localStorage.getItem(
+          "historicoCronograma"
+        ) || "[]"
       );
 
-    if (estudos) {
+    let somaPercentuais = 0;
 
-      const registros =
-        JSON.parse(estudos);
-
-      const datasUnicas = [
-        ...new Set(
-          registros.map(
-            (e: any) => e.data
-          )
-        )
-      ];
-
-      setStreak(
-        datasUnicas.length
-      );
-    }
-
-    // REVISÕES
-
-    const revisoes =
-      localStorage.getItem(
-        "revisoesConcluidas"
-      );
-
-    if (revisoes) {
-
-      const lista =
-        JSON.parse(
-          revisoes
-        );
-
-      setRevisoesPendentes(
-        lista.length
-      );
-
-    }
-
-    // SIMULADOS
-
-    const simulados =
-      localStorage.getItem(
-        "simulados"
-      );
-
-    if (simulados) {
-
-      const historico =
-        JSON.parse(
-          simulados
-        );
-
-      if (
-        historico.length > 0
-      ) {
-
-        const media =
-          (
-            historico.reduce(
-              (
-                acc: number,
-                item: any
-              ) =>
-                acc +
-                (
-                  item.acertos /
-                  item.questoes
-                ) *
-                  100,
-              0
-            ) /
-            historico.length
-          ).toFixed(1);
-
-        setMediaSimulados(
-          media
-        );
-
+    historicoCronograma.forEach(
+      (semana: any) => {
+        somaPercentuais +=
+          semana.percentual;
       }
+    );
 
+    somaPercentuais +=
+      notaCronograma;
+
+    const jornada =
+      (
+        somaPercentuais /
+        (TOTAL_SEMANAS * 100)
+      ) * 100;
+
+    setJornadaCBM(
+      Number(
+        jornada.toFixed(1)
+      )
+    );
+
+    // MISSÕES DO DIA
+
+    const diasSemana = [
+      "Domingo",
+      "Segunda",
+      "Terça",
+      "Quarta",
+      "Quinta",
+      "Sexta",
+      "Sábado",
+    ];
+
+    const hoje =
+      diasSemana[new Date().getDay()];
+
+    const cronogramaSemanal = {
+      Segunda: [
+        "Português",
+        "Direito Constitucional",
+        "50 Questões",
+      ],
+
+      Terça: [
+        "Matemática",
+        "Informática",
+        "50 Questões",
+      ],
+
+      Quarta: [
+        "Direito Penal",
+        "Português",
+        "50 Questões",
+      ],
+
+      Quinta: [
+        "Direito Administrativo",
+        "Direitos Humanos",
+        "50 Questões",
+      ],
+
+      Sexta: [
+        "Matemática",
+        "Informática",
+        "50 Questões",
+      ],
+
+      Sábado: [
+        "Direito Penal Militar",
+        "Processual Penal Militar",
+        "80 Questões",
+      ],
+
+      Domingo: [
+        "Simulado",
+        "Revisão",
+      ],
+    };
+
+    const tarefasHoje =
+      cronogramaSemanal[
+        hoje as keyof typeof cronogramaSemanal
+      ] || [];
+
+    let tarefasPendentes =
+      [...tarefasHoje];
+
+    if (cronogramaSalvo) {
+      const dados =
+        JSON.parse(
+          cronogramaSalvo
+        );
+
+      const tarefas =
+        dados.tarefas || {};
+
+      tarefasPendentes =
+        tarefasHoje.filter(
+          (item) => {
+            const id =
+              `${hoje}-${item}`;
+
+            return !tarefas[id];
+          }
+        );
     }
+
+    setMissoesHoje(
+      tarefasPendentes
+    );
 
   }, []);
 
   const progresso =
-    (tarefasConcluidas /
-      totalTarefas) *
-    100;
-
-  const indiceCBM =
-    Math.min(
-      100,
-
-      (
-        Number(
-          aproveitamento
-        ) *
-          0.4 +
-
-        progresso *
-          0.3 +
-
-        Number(
-          mediaSimulados
-        ) *
-          0.2 +
-
-        Math.min(
-          streak,
-          30
-        ) *
-          0.33
-      )
-    );
+    jornadaCBM;
 
   return (
-
-    <div className="flex bg-zinc-950 text-white min-h-screen">
+    <div className="flex min-h-screen bg-zinc-950 text-white">
 
       <Sidebar />
 
       <main className="flex-1 p-8">
 
-        <h1 className="text-5xl font-bold mb-8">
-          🚒 Rumo ao CBM-BA
-        </h1>
+        <div className="mb-8">
 
-        <div className="grid grid-cols-4 gap-4">
+          <p className="text-red-500 font-medium">
+            Bem-vindo
+          </p>
 
-          <Card
-            titulo="Questões Resolvidas"
-            valor={questoesResolvidas}
-          />
+          <div className="flex items-center gap-4">
 
-          <Card
-            titulo="Aproveitamento"
-            valor={`${aproveitamento}%`}
-          />
-
-          <Card
-            titulo="Tarefas Concluídas"
-            valor={tarefasConcluidas}
-          />
-
-          <Card
-            titulo="Progresso Semanal"
-            valor={`${progresso.toFixed(0)}%`}
-          />
-
-          <Card
-            titulo="🔥 Streak"
-            valor={`${streak} dias`}
-          />
-
-          <Card
-            titulo="📚 Revisões"
-            valor={revisoesPendentes}
-          />
-
-          <Card
-            titulo="🎯 Simulados"
-            valor={`${mediaSimulados}%`}
-          />
-
-          <Card
-            titulo="🏆 Índice CBM"
-            valor={indiceCBM.toFixed(0)}
-          />
-
-        </div>
-
-        <div className="mt-10 bg-zinc-900 p-6 rounded-xl">
-
-          <h2 className="text-2xl font-bold mb-4">
-            Progresso Geral
-          </h2>
-
-          <div className="w-full bg-zinc-700 h-6 rounded-full">
-
-            <div
-              className="bg-green-500 h-6 rounded-full"
-              style={{
-                width: `${progresso}%`
-              }}
+            <img
+              src="/icon-512.png"
+              alt="CBM-BA"
+              className="w-14 h-14 rounded-xl"
             />
+
+            <h1 className="text-5xl font-bold">
+              Rumo ao CBM-BA
+            </h1>
 
           </div>
 
-          <p className="mt-3">
-            {tarefasConcluidas}
-            {" de "}
-            {totalTarefas}
-            {" tarefas concluídas"}
+          <p className="text-zinc-400 mt-2">
+            Seu centro de comando para aprovação.
           </p>
+
+        </div>
+
+        {/* CARDS PRINCIPAIS */}
+
+        <div className="grid grid-cols-4 gap-5 mb-6">
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-zinc-400">
+              Questões Resolvidas
+            </p>
+
+            <h2 className="text-5xl font-bold mt-3">
+              {questoesResolvidas}
+            </h2>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-zinc-400">
+              Aproveitamento
+            </p>
+
+            <h2 className="text-5xl font-bold mt-3 text-green-400">
+              {aproveitamento}%
+            </h2>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-zinc-400">
+              Tarefas
+            </p>
+
+            <h2 className="text-5xl font-bold mt-3">
+              {tarefasConcluidas}
+            </h2>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-zinc-400">
+              Progresso
+            </p>
+
+            <h2 className="text-5xl font-bold mt-3 text-red-500">
+              {progresso}%
+            </h2>
+          </div>
+
+        </div>
+
+        {/* CARDS SECUNDÁRIOS */}
+
+        <div className="grid grid-cols-4 gap-5 mb-8">
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-orange-400">
+              🔥 Streak
+            </p>
+
+            <h3 className="text-4xl font-bold mt-2">
+              0 dias
+            </h3>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-cyan-400">
+              📚 Revisões
+            </p>
+
+            <h3 className="text-4xl font-bold mt-2">
+              0
+            </h3>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-pink-400">
+              🎯 Simulados
+            </p>
+
+            <h3 className="text-4xl font-bold mt-2">
+              0%
+            </h3>
+          </div>
+
+          <div className="card-premium rounded-2xl p-6">
+            <p className="text-yellow-400">
+              🎯 Jornada CBM
+            </p>
+
+            <h3 className="text-4xl font-bold mt-2">
+              {jornadaCBM}%
+            </h3>
+          </div>
+
+        </div>
+
+        {/* PAINEL INFERIOR */}
+
+        <div className="grid grid-cols-3 gap-6">
+
+          <div className="col-span-2 card-premium rounded-2xl p-8">
+
+            <h2 className="text-2xl font-bold mb-5">
+              Jornada até Aprovação
+            </h2>
+
+            <div className="w-full h-5 bg-zinc-800 rounded-full">
+
+              <div
+                className="h-5 rounded-full bg-gradient-to-r from-red-600 to-red-400"
+                style={{
+                  width: `${progresso}%`,
+                }}
+              />
+
+            </div>
+
+            <p className="mt-4 text-zinc-400">
+              Jornada total concluída:
+              {" "}
+              {jornadaCBM}%
+            </p>
+
+          </div>
+
+          <div className="card-premium rounded-2xl p-8">
+
+            <h2 className="text-2xl font-bold mb-4">
+              🎯 Missões de Hoje
+            </h2>
+
+            <div className="space-y-3">
+
+              {missoesHoje.length > 0 ? (
+
+                missoesHoje.map((missao) => (
+
+                  <div
+                    key={missao}
+                    className="
+                      bg-zinc-800
+                      rounded-xl
+                      p-4
+                      border
+                      border-zinc-700
+                      hover:border-red-500
+                      transition-all
+                    "
+                  >
+
+                    <p className="font-semibold">
+                      {missao}
+                    </p>
+
+                  </div>
+
+                ))
+
+              ) : (
+
+                <div
+                  className="
+                    bg-green-900/30
+                    border
+                    border-green-500
+                    rounded-xl
+                    p-4
+                  "
+                >
+
+                  <p className="font-semibold text-green-400">
+                    🏆 Todas as missões do dia concluídas
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+          </div>
 
         </div>
 
       </main>
 
     </div>
-
-  );
-}
-
-function Card({
-  titulo,
-  valor
-}: {
-  titulo: string;
-  valor: string | number;
-}) {
-
-  return (
-
-    <div className="bg-zinc-900 rounded-xl p-6">
-
-      <h2 className="text-zinc-400">
-        {titulo}
-      </h2>
-
-      <p className="text-4xl font-bold">
-        {valor}
-      </p>
-
-    </div>
-
   );
 }

@@ -1,64 +1,234 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import {
+  LayoutDashboard,
+  CalendarDays,
+  BookOpen,
+  BarChart3,
+  Target,
+  Flame,
+  TrendingUp,
+  History,
+  ClipboardList,
+  Brain,
+  FileCheck,
+} from "lucide-react";
+
+const menu = [
+  {
+    nome: "Dashboard",
+    rota: "/",
+    icone: LayoutDashboard,
+  },
+  {
+    nome: "Cronograma",
+    rota: "/cronograma",
+    icone: CalendarDays,
+  },
+  {
+    nome: "Questões",
+    rota: "/questoes",
+    icone: ClipboardList,
+  },
+  {
+    nome: "Estudos",
+    rota: "/estudos",
+    icone: BookOpen,
+  },
+  {
+    nome: "Estatísticas",
+    rota: "/estatisticas",
+    icone: BarChart3,
+  },
+  {
+    nome: "Metas",
+    rota: "/metas",
+    icone: Target,
+  },
+  {
+    nome: "Streak",
+    rota: "/streak",
+    icone: Flame,
+  },
+  {
+    nome: "Gráficos",
+    rota: "/graficos",
+    icone: TrendingUp,
+  },
+  {
+    nome: "Calendário",
+    rota: "/calendario",
+    icone: CalendarDays,
+  },
+  {
+    nome: "Histórico",
+    rota: "/historico",
+    icone: History,
+  },
+  {
+    nome: "Simulados",
+    rota: "/simulados",
+    icone: FileCheck,
+  },
+  {
+    nome: "Revisões",
+    rota: "/revisoes",
+    icone: Brain,
+  },
+];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
+  const [progresso, setProgresso] =
+    useState(0);
+
+  useEffect(() => {
+    const cronograma =
+      localStorage.getItem("cronograma");
+
+    if (!cronograma) return;
+
+    const dados =
+      JSON.parse(cronograma);
+
+    const tarefas =
+      dados.tarefas || {};
+
+    const concluidas =
+      Object.values(tarefas)
+        .filter(Boolean)
+        .length;
+
+    const total = 20;
+
+    setProgresso(
+      (concluidas / total) * 100
+    );
+  }, []);
+
   return (
-    <aside className="w-64 min-h-screen bg-zinc-900 p-6">
+    <aside className="w-72 min-h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col">
 
-      <h2 className="text-2xl font-bold mb-10">
-        🚒 CBM-BA
-      </h2>
+      {/* TOPO */}
 
-      <nav className="flex flex-col gap-5">
+      <div className="p-6 border-b border-zinc-800">
 
-        <Link href="/">
-          Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
 
-        <Link href="/cronograma">
-          Cronograma
-        </Link>
+          <Image
+            src="/icon-512.png"
+            alt="CBM-BA"
+            width={52}
+            height={52}
+            className="rounded-xl"
+          />
 
-        <Link href="/questoes">
-          Questões
-        </Link>
+          <div>
 
-        <Link href="/estudos">
-          Estudos
-        </Link>
+            <h1 className="font-bold text-xl text-white">
+              CBM-BA
+            </h1>
 
-        <Link href="/estatisticas">
-          Estatísticas
-        </Link>
+            <p className="text-zinc-400 text-sm">
+              Tracker Premium
+            </p>
 
-        <Link href="/metas">
-          Metas
-        </Link>
+          </div>
 
-        <Link href="/streak">
-          Streak
-        </Link>
+        </div>
 
-        <Link href="/graficos">
-        Gráficos
-        </Link>
+      </div>
 
-        <Link href="/calendario">
-        Calendário
-        </Link>
+      {/* MENU */}
 
-        <Link href="/historico">
-        Histórico
-        </Link>
+      <div className="flex-1 p-4 space-y-2">
 
-        <Link href="/simulados">
-          Simulados
-        </Link>
+        {menu.map((item) => {
+          const Icone =
+            item.icone;
 
-        <Link href="/revisoes">
-          Revisões
-        </Link>
+          const ativo =
+            pathname === item.rota;
 
-      </nav>
+          return (
+            <Link
+              key={item.rota}
+              href={item.rota}
+              className={`
+                flex items-center gap-3
+                px-4 py-3
+                rounded-xl
+                transition-all
+                duration-200
+
+                ${
+                  ativo
+                    ? "bg-red-600 text-white shadow-lg"
+                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                }
+              `}
+            >
+              <Icone size={20} />
+
+              <span className="font-medium">
+                {item.nome}
+              </span>
+            </Link>
+          );
+        })}
+
+      </div>
+
+      {/* PERFIL */}
+
+      <div className="p-5 border-t border-zinc-800">
+
+        <div className="bg-zinc-900 rounded-2xl p-4">
+
+          <p className="text-zinc-400 text-sm">
+            Bombeiro em formação
+          </p>
+
+          <h3 className="font-bold text-white mt-1">
+            Davi Leão
+          </h3>
+
+          <div className="mt-4">
+
+            <div className="flex justify-between text-xs text-zinc-400 mb-2">
+
+              <span>
+                Progresso Semanal
+              </span>
+
+              <span>
+                {progresso.toFixed(0)}%
+              </span>
+
+            </div>
+
+            <div className="w-full h-2 rounded-full bg-zinc-800">
+
+              <div
+                className="h-2 rounded-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-500"
+                style={{
+                  width: `${progresso}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </aside>
   );
