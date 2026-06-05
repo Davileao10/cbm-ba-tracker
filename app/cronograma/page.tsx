@@ -7,45 +7,48 @@ const cronograma = {
   Segunda: [
     "Português",
     "Direito Constitucional",
-    "50 Questões"
+    "50 Questões",
   ],
 
   Terça: [
     "Matemática",
     "Informática",
-    "50 Questões"
+    "Física",
+    "50 Questões",
   ],
 
   Quarta: [
     "Direito Penal",
     "Português",
-    "50 Questões"
+    "50 Questões",
   ],
 
   Quinta: [
     "Direito Administrativo",
     "Direitos Humanos",
-    "50 Questões"
+    "Química",
+    "50 Questões",
   ],
 
   Sexta: [
     "Matemática",
+    "Ciências da Natureza",
     "Informática",
-    "50 Questões"
+    "50 Questões",
   ],
 
   Sábado: [
     "Direito Penal Militar",
     "Processual Penal Militar",
-    "80 Questões"
+    "Revisão Física/Química",
+    "80 Questões",
   ],
 
   Domingo: [
     "Simulado",
-    "Revisão"
-  ]
+    "Revisão",
+  ],
 };
-
 function obterSemanaAtual() {
 
   const hoje = new Date();
