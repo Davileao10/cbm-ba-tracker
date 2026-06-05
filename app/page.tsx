@@ -73,7 +73,7 @@ export default function Home() {
       );
 
       notaCronograma =
-        (concluidas / 20) * 100;
+        (concluidas / 24) * 100;
     }
 
     // JORNADA CBM - 36 SEMANAS
@@ -127,47 +127,51 @@ export default function Home() {
       diasSemana[new Date().getDay()];
 
     const cronogramaSemanal = {
-      Segunda: [
-        "Português",
-        "Direito Constitucional",
-        "50 Questões",
-      ],
-
-      Terça: [
-        "Matemática",
-        "Informática",
-        "50 Questões",
-      ],
-
-      Quarta: [
-        "Direito Penal",
-        "Português",
-        "50 Questões",
-      ],
-
-      Quinta: [
-        "Direito Administrativo",
-        "Direitos Humanos",
-        "50 Questões",
-      ],
-
-      Sexta: [
-        "Matemática",
-        "Informática",
-        "50 Questões",
-      ],
-
-      Sábado: [
-        "Direito Penal Militar",
-        "Processual Penal Militar",
-        "80 Questões",
-      ],
-
-      Domingo: [
-        "Simulado",
-        "Revisão",
-      ],
-    };
+    Segunda: [
+      "Português",
+      "Direito Constitucional",
+      "50 Questões",
+    ],
+  
+    Terça: [
+      "Matemática",
+      "Informática",
+      "Física",
+      "50 Questões",
+    ],
+  
+    Quarta: [
+      "Direito Penal",
+      "Português",
+      "50 Questões",
+    ],
+  
+    Quinta: [
+      "Direito Administrativo",
+      "Direitos Humanos",
+      "Química",
+      "50 Questões",
+    ],
+  
+    Sexta: [
+      "Matemática",
+      "Ciências da Natureza",
+      "Informática",
+      "50 Questões",
+    ],
+  
+    Sábado: [
+      "Direito Penal Militar",
+      "Processual Penal Militar",
+      "Revisão Física/Química",
+      "80 Questões",
+    ],
+  
+    Domingo: [
+      "Simulado",
+      "Revisão",
+    ],
+  };
 
     const tarefasHoje =
       cronogramaSemanal[
